@@ -1,7 +1,19 @@
 import { http, HttpResponse } from 'msw';
 
 export const handlers = [
-  http.post('/auth/kakao', () => {
+  http.post('/auth/kakao', async ({ request }) => {
+    const body = await request.json() as { code: string; redirect_uri?: string };
+    
+    // 모킹된 code 체크
+    if (body.code === 'mock-kakao-code') {
+      return HttpResponse.json({
+        accessToken: 'mock-kakao-access-token',
+        refreshToken: 'mock-kakao-refresh-token',
+        nickname: '테스트 계정',
+        image_url: 'https://example.com/image.png',
+      });
+    }
+    
     return HttpResponse.json({
       accessToken: 'mock-kakao-access-token',
       refreshToken: 'mock-kakao-refresh-token',
