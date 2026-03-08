@@ -35,10 +35,20 @@ export const handlers = [
   }),
 
   // 사용자 정보 조회
-  http.get('/auth/me', () => {
+  http.get('/users/me', () => {
     return HttpResponse.json({
+      id: 'mock-user-id',
+      email: 'test@kakao.com',
       nickname: '테스트 계정',
-      image_url: 'https://example.com/image.png',
+      imageUrl: 'https://example.com/image.png',
+      loginType: 'kakao',
+      role: 'user',
+      isExpenseOpen: 'true',
+      categories: [
+        { categoryId: 1, name: '한식' },
+        { categoryId: 2, name: '중식' },
+        { categoryId: 3, name: '일식' }
+      ]
     });
-  }), 
+  }),
 ];
