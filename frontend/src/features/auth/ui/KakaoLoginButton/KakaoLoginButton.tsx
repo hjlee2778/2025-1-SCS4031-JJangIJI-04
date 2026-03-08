@@ -8,7 +8,8 @@ export const KakaoLoginButton = () => {
   const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${window.location.hostname.startsWith('www.') ? REDIRECT_URI_WWW : REDIRECT_URI}&response_type=code`;
 
   const handleLogin = () => {
-      if (import.meta.env.DEV) {
+      // MSW 활성화 상태면 모킹된 콜백으로
+      if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_MSW === 'true') {
         window.location.href = '/oauth/callback/kakao?code=mock-kakao-code';
         return;
       }
