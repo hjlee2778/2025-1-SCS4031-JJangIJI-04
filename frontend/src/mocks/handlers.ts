@@ -4,13 +4,13 @@ import { http, HttpResponse } from 'msw';
 const expensesDB: Record<string, any[]> = {
   '2026-03-08': [
     { id: 1, restaurant: '맛있는 한식당', menu: '김치찌개', expense: 8000, memo: '점심 식사', emojis: [] },
-    { id: 2, restaurant: '카페', menu: '아메리카노', expense: 4500, memo: '오후 커피', emojis: [] }
+    { id: 2, restaurant: '가성비 중식당', menu: '짜장면', expense: 6500, memo: '간단한 점심', emojis: [] }
   ],
   '2026-03-07': [
-    { id: 3, restaurant: '일식당', menu: '돈까스', expense: 12000, memo: '저녁', emojis: [] }
+    { id: 3, restaurant: '일식 맛집', menu: '돈까스', expense: 12000, memo: '저녁', emojis: [] }
   ],
   '2026-03-05': [
-    { id: 4, restaurant: '분식집', menu: '떡볶이', expense: 6000, memo: '간식', emojis: [] }
+    { id: 4, restaurant: '분식 천국', menu: '떡볶이', expense: 5500, memo: '간식', emojis: [] }
   ],
 };
 
@@ -256,5 +256,308 @@ export const handlers = [
     }
     
     return HttpResponse.json({ message: 'Not found' }, { status: 404 });
+  }),
+
+  // 추천 레스토랑 목록
+  http.get('/recommendation/restaurants', () => {
+    return HttpResponse.json([
+      {
+        id: 1,
+        name: '맛있는 한식당',
+        menuAverage: 8500,
+        imgUrl: '/images/basic-restaurant.svg',
+        streetAddress: '서울 강남구 테헤란로 123',
+        openingHours: '11:00-22:00',
+        category: '한식',
+        bookmarked: false,
+      },
+      {
+        id: 2,
+        name: '가성비 중식당',
+        menuAverage: 7000,
+        imgUrl: '/images/basic-restaurant.svg',
+        streetAddress: '서울 서초구 서초대로 456',
+        openingHours: '10:00-21:00',
+        category: '중식',
+        bookmarked: false,
+      },
+      {
+        id: 3,
+        name: '일식 맛집',
+        menuAverage: 12000,
+        imgUrl: '/images/basic-restaurant.svg',
+        streetAddress: '서울 강남구 역삼동 789',
+        openingHours: '11:30-22:00',
+        category: '일식',
+        bookmarked: true,
+      },
+      {
+        id: 4,
+        name: '분식 천국',
+        menuAverage: 5000,
+        imgUrl: '/images/basic-restaurant.svg',
+        streetAddress: '서울 마포구 홍대입구 101',
+        openingHours: '09:00-20:00',
+        category: '분식',
+        bookmarked: false,
+      },
+      {
+        id: 5,
+        name: '양식 레스토랑',
+        menuAverage: 15000,
+        imgUrl: '/images/basic-restaurant.svg',
+        streetAddress: '서울 강남구 청담동 202',
+        openingHours: '12:00-22:00',
+        category: '양식',
+        bookmarked: false,
+      },
+    ]);
+  }),
+
+  // 북마크 토글
+  http.post('/bookmarks/restaurants/:restaurantId', ({ params }) => {
+    const { restaurantId } = params;
+    return HttpResponse.json({ 
+      message: 'Bookmark toggled',
+      restaurantId: Number(restaurantId)
+    });
+  }),
+
+  // 식당 상세 정보
+  http.get('/restaurants/:restaurantId', ({ params }) => {
+    const { restaurantId } = params;
+    const id = Number(restaurantId);
+    
+    // 더미 상세 데이터 (ID별로 다르게)
+    const restaurantDetails: Record<number, any> = {
+      1: {
+        id: 1,
+        name: '맛있는 한식당',
+        menuAverage: 8500,
+        imgUrl: ['/images/basic-restaurant.svg', '/images/basic-restaurant.svg'],
+        streetAddress: '서울 강남구 테헤란로 123',
+        openingHour: [
+          '월 11:00 - 22:00',
+          '화 11:00 - 22:00',
+          '수 11:00 - 22:00',
+          '목 11:00 - 22:00',
+          '금 11:00 - 22:00',
+          '토 12:00 - 21:00',
+          '일 null'
+        ],
+        category: '한식',
+        menu: [
+          {
+            name: '김치찌개',
+            introduce: '얼큰하고 맛있는 김치찌개입니다',
+            price: 8000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: true
+          },
+          {
+            name: '된장찌개',
+            introduce: '구수한 된장찌개',
+            price: 8000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          },
+          {
+            name: '제육볶음',
+            introduce: '매콤한 제육볶음',
+            price: 9000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          }
+        ],
+        bookmarked: false
+      },
+      2: {
+        id: 2,
+        name: '가성비 중식당',
+        menuAverage: 7000,
+        imgUrl: ['/images/basic-restaurant.svg'],
+        streetAddress: '서울 서초구 서초대로 456',
+        openingHour: [
+          '월 10:00 - 21:00',
+          '화 10:00 - 21:00',
+          '수 10:00 - 21:00',
+          '목 10:00 - 21:00',
+          '금 10:00 - 21:00',
+          '토 10:00 - 21:00',
+          '일 10:00 - 21:00'
+        ],
+        category: '중식',
+        menu: [
+          {
+            name: '짜장면',
+            introduce: '전통 짜장면',
+            price: 6000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: true
+          },
+          {
+            name: '짬뽕',
+            introduce: '얼큰한 짬뽕',
+            price: 7000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          },
+          {
+            name: '탕수육',
+            introduce: '바삭한 탕수육',
+            price: 15000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          }
+        ],
+        bookmarked: false
+      },
+      3: {
+        id: 3,
+        name: '일식 맛집',
+        menuAverage: 12000,
+        imgUrl: ['/images/basic-restaurant.svg'],
+        streetAddress: '서울 강남구 역삼동 789',
+        openingHour: [
+          '월 11:30 - 22:00',
+          '화 11:30 - 22:00',
+          '수 11:30 - 22:00',
+          '목 11:30 - 22:00',
+          '금 11:30 - 23:00',
+          '토 11:30 - 23:00',
+          '일 11:30 - 22:00'
+        ],
+        category: '일식',
+        menu: [
+          {
+            name: '돈까스',
+            introduce: '바삭한 일본식 돈까스',
+            price: 11000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: true
+          },
+          {
+            name: '우동',
+            introduce: '따뜻한 우동',
+            price: 9000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          },
+          {
+            name: '카츠동',
+            introduce: '돈까스 덮밥',
+            price: 10000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          }
+        ],
+        bookmarked: true
+      },
+      4: {
+        id: 4,
+        name: '분식 천국',
+        menuAverage: 5000,
+        imgUrl: ['/images/basic-restaurant.svg'],
+        streetAddress: '서울 마포구 홍대입구 101',
+        openingHour: [
+          '월 09:00 - 20:00',
+          '화 09:00 - 20:00',
+          '수 09:00 - 20:00',
+          '목 09:00 - 20:00',
+          '금 09:00 - 20:00',
+          '토 09:00 - 20:00',
+          '일 null'
+        ],
+        category: '분식',
+        menu: [
+          {
+            name: '떡볶이',
+            introduce: '매콤달콤 떡볶이',
+            price: 4000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: true
+          },
+          {
+            name: '튀김',
+            introduce: '바삭한 튀김',
+            price: 3000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          },
+          {
+            name: '순대',
+            introduce: '신선한 순대',
+            price: 4000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          }
+        ],
+        bookmarked: false
+      },
+      5: {
+        id: 5,
+        name: '양식 레스토랑',
+        menuAverage: 15000,
+        imgUrl: ['/images/basic-restaurant.svg'],
+        streetAddress: '서울 강남구 청담동 202',
+        openingHour: [
+          '월 null',
+          '화 12:00 - 22:00',
+          '수 12:00 - 22:00',
+          '목 12:00 - 22:00',
+          '금 12:00 - 23:00',
+          '토 12:00 - 23:00',
+          '일 12:00 - 22:00'
+        ],
+        category: '양식',
+        menu: [
+          {
+            name: '크림 파스타',
+            introduce: '부드러운 크림 파스타',
+            price: 14000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: true
+          },
+          {
+            name: '토마토 파스타',
+            introduce: '새콤달콤 토마토 파스타',
+            price: 13000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          },
+          {
+            name: '스테이크',
+            introduce: '육즙 가득 스테이크',
+            price: 25000,
+            imgUrl: '/images/basic-restaurant.svg',
+            main: false
+          }
+        ],
+        bookmarked: false
+      }
+    };
+    
+    // 해당 ID의 상세 정보가 있으면 반환, 없으면 기본값
+    const detail = restaurantDetails[id] || {
+      id,
+      name: `식당 ${id}`,
+      menuAverage: 10000,
+      imgUrl: ['/images/basic-restaurant.svg'],
+      streetAddress: '서울시',
+      openingHour: ['매일 11:00 - 22:00'],
+      category: '한식',
+      menu: [
+        {
+          name: '대표 메뉴',
+          introduce: '맛있는 메뉴입니다',
+          price: 10000,
+          imgUrl: '/images/basic-restaurant.svg',
+          main: true
+        }
+      ],
+      bookmarked: false
+    };
+    
+    return HttpResponse.json(detail);
   }),
 ];
