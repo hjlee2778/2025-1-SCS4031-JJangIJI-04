@@ -1,24 +1,18 @@
 import styled from 'styled-components';
 import { EmojiReactionPanel } from '@/features/community/ui/EmojiReactionPanel';
-import type { EmojiKey } from '@/features/community/types/community';
 import StoreIcon from '@/assets/icons/store.svg?react';
 import MenuIcon from '@/assets/icons/menu.svg?react';
 import WalletIcon from '@/assets/icons/wallet.svg?react';
+import { ExpenseRecord } from '@/features/spendingStatus/api/useDailyExpenses';
 
-interface ExpenseCardProps {
-  storeName: string;
-  category: string;
-  amount: number;
-  memo: string;
-  reactions: Partial<Record<EmojiKey, number>>;
-}
+type ExpenseCardProps = Omit<ExpenseRecord, 'id'>;
 
 export const ExpenseCard = ({
-  storeName,
-  category,
-  amount,
+  restaurant,
+  menu,
+  expense,
   memo,
-  reactions,
+  emojis,
 }: ExpenseCardProps) => {
   return (
     <Card>
@@ -26,22 +20,22 @@ export const ExpenseCard = ({
         <InfoRow>
           <Item>
             <StoreIcon />
-            <Text>{storeName}</Text>
+            <Text>{restaurant}</Text>
           </Item>
           <Item>
             <MenuIcon />
-            <Text>{category}</Text>
+            <Text>{menu}</Text>
           </Item>
           <Item>
             <WalletIcon />
-            <Text>{amount.toLocaleString()}원</Text>
+            <Text>{expense.toLocaleString()}원</Text>
           </Item>
         </InfoRow>
 
         <Memo>{memo}</Memo>
 
         <EmojiWrapper>
-          <EmojiReactionPanel reactions={reactions} selected={null} />
+          <EmojiReactionPanel reactions={emojis} />
         </EmojiWrapper>
       </Content>
     </Card>
@@ -54,7 +48,7 @@ const Card = styled.div`
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   background-color: #fff;
-  border: 1px solid #E0E0E0;
+  border: 1px solid #e0e0e0;
   min-height: 140px;
   display: flex;
   flex-direction: column;

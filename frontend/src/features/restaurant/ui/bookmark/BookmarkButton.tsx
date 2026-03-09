@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { BookmarkIcon } from '@/features/restaurant/ui/bookmark/BookmarkIcon'; // ✅ 이 부분만 교체!
+import { BookmarkIcon } from '@/features/restaurant/ui/bookmark/BookmarkIcon';
 
 interface BookmarkButtonProps {
   active: boolean;

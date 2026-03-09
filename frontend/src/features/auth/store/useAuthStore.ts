@@ -10,7 +10,7 @@ import { Category } from '@/features/auth/types/auth';
  */
 
 interface AuthState {
-  accessToken: string | null; // 메모리에 저장할 accessToken (요청 시 Authorization 헤더에 사용)
+  userId: number | null;
   nickname: string | null;  // 카카오 로그인 시 받은 사용자 닉네임 (회원가입 폼의 초기값으로 사용)
   profileImage: string | null; // 사용자 프로필 이미지 URL (커뮤니티, 마이페이지 등에 활용)
   categories: Category[] | null;
@@ -18,7 +18,7 @@ interface AuthState {
   isRefreshFailed: boolean;  // 리프레시 실패 상태
   usedKakaoCode: string | null;
   setUsedKakaoCode: (code: string | null) => void;
-  setAccessToken: (token: string) => void;  // accessToken을 메모리에 저장하는 함수
+  setUserId: (id: number) => void;
   setNickname: (nickname: string) => void;  // nickname을 저장하는 함수
   setProfileImage: (url: string) => void; // profileImage(URL)를 저장하는 함수
   setCategories: (categories: Category[]) => void;
@@ -28,20 +28,20 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  accessToken: null,
+  userId: null,
   nickname: null,
   profileImage: null,
   categories: null,
   isInitializing: true,
   usedKakaoCode: null,
   setUsedKakaoCode: (code) => set({ usedKakaoCode: code }),
-  setAccessToken: (token) => set({ accessToken: token }),
+  setUserId: (id) => set({ userId: id }),
   setNickname: (nickname) => set({ nickname }),
   setProfileImage: (url) => set({ profileImage: url }),
   setCategories: (categories) => set({ categories }),
   clearAuth: () =>
     set({
-      accessToken: null,
+      userId: null,
       nickname: null,
       profileImage: null,
       categories: null,

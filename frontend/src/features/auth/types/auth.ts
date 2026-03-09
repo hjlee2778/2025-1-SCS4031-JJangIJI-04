@@ -1,8 +1,7 @@
 export interface KakaoLoginResponse {
-    accessToken: string;
     nickname: string;
     imageUrl: string;
-  }
+}
 
 export interface SignupRequest {
   nickname: string;

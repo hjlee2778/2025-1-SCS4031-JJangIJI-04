@@ -23,7 +23,7 @@ export const StarRating = ({ value, onChange, max = 5 }: StarRatingProps) => {
           return (
             <Star
               key={index}
-              filled={index <= value}
+              $filled={index <= value}
               onClick={() => handleClick(index)}
             >
               ★
@@ -39,19 +39,18 @@ export const StarRating = ({ value, onChange, max = 5 }: StarRatingProps) => {
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px; // 별과 평점 텍스트 간 간격
+  gap: 8px;
 `;
 
 const StarWrapper = styled.div`
   display: flex;
-  gap: 6px; // 별 간격 넓힘
+  gap: 6px;
 `;
 
-const Star = styled.span<{ filled: boolean }>`
-  font-size: 24px;
-  color: ${({ filled }) => (filled ? '#FFD700' : '#ccc')};
+const Star = styled.span<{ $filled: boolean }>`
   cursor: pointer;
-  transition: color 0.2s;
+  color: ${({ $filled }) => ($filled ? '#FFD700' : '#E0E0E0')};
+  font-size: 32px;
 `;
 
 const RatingText = styled.span`

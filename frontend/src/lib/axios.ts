@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosHeaders, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { requestRefreshToken } from '@/features/auth/api/requestRefreshToken';
 
@@ -27,14 +27,7 @@ api.interceptors.response.use(
       (originalRequest as any)._retry = true;
 
       try {
-        const newAccessToken = await requestRefreshToken();
-        useAuthStore.getState().setAccessToken(newAccessToken);
-
-        if (originalRequest.headers) {
-          const headers = originalRequest.headers as AxiosHeaders;
-          headers.set('Authorization', `Bearer ${newAccessToken}`);
-        }
-
+        await requestRefreshToken();  // 반환값 무시, 쿠키로 처리
         return api(originalRequest);
       } catch (refreshError) {
         useAuthStore.getState().clearAuth();

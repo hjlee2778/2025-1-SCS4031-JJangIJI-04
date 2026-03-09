@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { getCurrentWeek } from '@/lib/date/getCurrentWeek';
 import { useAddSavingGoal } from '@/features/goals/mutations/useAddSavingGoal';
 import { InputField } from '@/shared/ui/InputField';
+import { format, endOfWeek, startOfWeek } from 'date-fns';
 
 const WeeklyGoalPage = () => {
-  const { startDate, endDate } = getCurrentWeek();
+  const today = new Date();
+  const startOfThisWeek = startOfWeek(today, { weekStartsOn: 0 }); 
+  const endOfThisWeek = endOfWeek(today, { weekStartsOn: 0 });
+  
+  const startDate = format(startOfThisWeek, 'yyyy-MM-dd');
+  const endDate = format(endOfThisWeek, 'yyyy-MM-dd');
+  
   const [budget, setBudget] = useState('');
   const { mutate: addGoal } = useAddSavingGoal();
 
@@ -38,11 +44,14 @@ const WeeklyGoalPage = () => {
     });
   };
 
+  // 남은 일수 계산
+  const daysLeft = Math.ceil((endOfThisWeek.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
   return (
     <Container>
       <ContentWrapper>
         <Title>{`아직 이번주 외식비 절약 목표를\n설정하지 않으셨네요`}</Title>
-        <SubTitle>이번 주 토요일까지 절약하고자 하는 목표 외식비 금액을 작성해주세요!</SubTitle>
+        <SubTitle>이번 주 토요일까지 ({daysLeft}일 동안) 절약하고자 하는 목표 외식비 금액을 작성해주세요!</SubTitle>
         <InputField
           placeholder="금액을 입력해주세요"
           value={budget}

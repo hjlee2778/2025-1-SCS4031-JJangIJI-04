@@ -8,20 +8,20 @@ export const KakaoLoginButton = () => {
   const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${window.location.hostname.startsWith('www.') ? REDIRECT_URI_WWW : REDIRECT_URI}&response_type=code`;
 
   const handleLogin = () => {
-      // MSW 활성화 상태면 모킹된 콜백으로
-      if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_MSW === 'true') {
-        window.location.href = '/oauth/callback/kakao?code=mock-kakao-code';
-        return;
-      }
-      
-      // 프로덕션에선 제외
-      window.location.href = KAKAO_AUTH_URL;
+
+    //로컬에서는 모킹된 콜백으로 이동
+    if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_MSW === 'true') {
+      window.location.href = '/oauth/callback/kakao?code=mock-kakao-code';
+      return;
+    }
+    // 프로덕션에서는 실제 카카오 로그인 페이지로 이동
+    window.location.href = KAKAO_AUTH_URL;
   };
 
   return (
     <ButtonWrapper onClick={handleLogin}>
       <ButtonImage
-        src="/images/kakao-login-button.png"
+        src="/icons/kakao-login-button.svg"
         alt="카카오 계정으로 로그인"
       />
     </ButtonWrapper>

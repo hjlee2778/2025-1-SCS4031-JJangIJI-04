@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import styled from 'styled-components';
 import {
   format,
@@ -6,9 +5,9 @@ import {
   endOfMonth,
   eachDayOfInterval,
   getDay,
-  addMonths,
-  subMonths,
   isFuture,
+  subMonths,
+  addMonths,
 } from 'date-fns';
 import type { DailyExpenseStatus } from '@/features/calendar/types/expense';
 
@@ -21,33 +20,42 @@ import AfterIcon from '@/assets/icons/navigate-after.svg?react';
 import { formatExpenseAmount } from '@/lib/number/formatExpenseAmount';
 
 interface Props {
+  currentDate: Date;
+  onDateChange: (newDate: Date) => void;
   dailyStatusList: DailyExpenseStatus[];
   onCollapse?: () => void;
   onDateSelect?: (dateStr: string) => void;
   selectedDate?: string;
 }
 
-export const FullCalendar = ({ dailyStatusList, onCollapse, onDateSelect, selectedDate }: Props) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-
+export const FullCalendar = ({
+  currentDate,
+  onDateChange,
+  dailyStatusList,
+  onCollapse,
+  onDateSelect,
+  selectedDate,
+}: Props) => {
   const start = startOfMonth(currentDate);
   const end = endOfMonth(currentDate);
   const days = eachDayOfInterval({ start, end });
   const firstDayIndex = getDay(start);
 
-  const handlePrevMonth = () => setCurrentDate(prev => subMonths(prev, 1));
-  const handleNextMonth = () => setCurrentDate(prev => addMonths(prev, 1));
+  const handlePrevMonth = () => onDateChange(subMonths(currentDate, 1));
+  const handleNextMonth = () => onDateChange(addMonths(currentDate, 1));
 
-  const statusMap = Object.fromEntries(
-    dailyStatusList.map((d) => [d.date, d])
-  );
+  const statusMap = Object.fromEntries(dailyStatusList.map((d) => [d.date, d]));
 
   const getIconByStatus = (status?: 'GOOD' | 'NOT_BAD' | 'BAD') => {
     switch (status) {
-      case 'GOOD': return <GoodIcon />;
-      case 'NOT_BAD': return <NormalIcon />;
-      case 'BAD': return <DangerousIcon />;
-      default: return <BasicIcon />;
+      case 'GOOD':
+        return <GoodIcon />;
+      case 'NOT_BAD':
+        return <NormalIcon />;
+      case 'BAD':
+        return <DangerousIcon />;
+      default:
+        return <BasicIcon />;
     }
   };
 
@@ -69,26 +77,33 @@ export const FullCalendar = ({ dailyStatusList, onCollapse, onDateSelect, select
         ))}
       </Weekdays>
       <Grid>
-        {Array(firstDayIndex).fill(null).map((_, i) => <Empty key={`empty-${i}`} />)}
+        {Array(firstDayIndex)
+          .fill(null)
+          .map((_, i) => (
+            <Empty key={`empty-${i}`} />
+          ))}
         {days.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const isSelected = dateStr === selectedDate;
+          const isDateFuture = isFuture(date);
 
           const icon = getIconByStatus(
-            isFuture(date) ? undefined : statusMap[dateStr]?.status
+            isDateFuture ? undefined : statusMap[dateStr]?.status
           );
           const amount = statusMap[dateStr]?.totalExpense;
-          const displayAmount = !isFuture(date) && amount && amount > 0
-            ? formatExpenseAmount(amount)
-            : '-';
+          const displayAmount =
+            !isDateFuture && amount && amount > 0
+              ? formatExpenseAmount(amount)
+              : '-';
 
           return (
             <DayCell
               key={dateStr}
-              onClick={() => onDateSelect?.(dateStr)}
+              onClick={() => !isDateFuture && onDateSelect?.(dateStr)}
+              $isFuture={isDateFuture}
             >
               <div className="date">{format(date, 'd')}</div>
-              <IconWrapper $isSelected={isSelected}>
+              <IconWrapper $isSelected={isSelected} $isFuture={isDateFuture}>
                 {icon}
               </IconWrapper>
               <div className="amount">{displayAmount}</div>
@@ -96,8 +111,8 @@ export const FullCalendar = ({ dailyStatusList, onCollapse, onDateSelect, select
           );
         })}
       </Grid>
-      <HandleWrapper>
-        <Handle onClick={onCollapse} />
+      <HandleWrapper onClick={onCollapse}>
+        <Handle />
       </HandleWrapper>
     </Wrapper>
   );
@@ -169,33 +184,41 @@ const Grid = styled.div`
   width: calc(100% - 32px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-template-rows: repeat(6, 72px);
   row-gap: 10px;
-  column-gap: 6px;
+  column-gap: 4px;
+  box-sizing: border-box;
 `;
 
 const Empty = styled.div`
   height: 72px;
+  min-width: 0;
 `;
 
-const DayCell = styled.div`
+const DayCell = styled.div<{ $isFuture: boolean }>`
   height: 72px;
-  padding: 6px 4px;
+  min-width: 0;
+  width: 100%;
+  padding: 6px 0;
   background: transparent;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  text-align: center;
+  cursor: ${({ $isFuture }) => ($isFuture ? 'not-allowed' : 'pointer')};
 
   .date {
+    width: 100%;
     font-size: 12px;
     font-weight: bold;
     margin-bottom: 4px;
   }
 
   .amount {
+    width: 100%;
     font-size: 10px;
     font-weight: 500;
     color: #202632;
@@ -203,15 +226,18 @@ const DayCell = styled.div`
   }
 `;
 
-const IconWrapper = styled.div<{ $isSelected?: boolean }>`
+const IconWrapper = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['$isSelected', '$isFuture'].includes(prop),
+})<{ $isSelected?: boolean; $isFuture?: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
-  aspect-ratio: 1; 
+  aspect-ratio: 1;
   border-radius: 50%;
   margin: 2px 0;
-  cursor: pointer;
+  cursor: inherit;
+  flex-shrink: 0;
 
   ${({ $isSelected }) =>
     $isSelected &&
@@ -228,7 +254,8 @@ const IconWrapper = styled.div<{ $isSelected?: boolean }>`
 const HandleWrapper = styled.div`
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  margin-top: 30px;
+  margin-bottom: 5px;
 `;
 
 const Handle = styled.div`

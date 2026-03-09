@@ -5,7 +5,7 @@ import { useAuthInit } from '@/features/auth/hooks/useAuthInit';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner/LoadingSpinner';
 import { BottomNavBar } from '@/widgets/BottomNavBar';
-
+import { ScrollToTop } from '@/shared/ui/ScrollToTop/ScrollToTop';
 interface LayoutProps {
   children?: ReactNode;
   hasFooter?: boolean;
@@ -26,6 +26,7 @@ export const Layout = ({ hasFooter = true }: LayoutProps) => {
   return (
     <Container>
       <Main $hasFooter={hasFooter}>
+        <ScrollToTop />
         <Outlet />
       </Main>
       {hasFooter && (
@@ -38,8 +39,8 @@ export const Layout = ({ hasFooter = true }: LayoutProps) => {
 };
 
 const Container = styled.div`
-  width: 100%;                          
-  max-width: var(--max-width);         
+  width: 100%;
+  max-width: var(--max-width);
   height: 100vh;
   overflow: hidden;
   background-color: var(--content-background);
@@ -59,7 +60,7 @@ const Main = styled.main<MainProps>`
     props.$hasFooter
       ? `calc(var(--footer-height) + var(--safe-area-bottom) + var(--page-padding))`
       : `calc(var(--safe-area-bottom) + var(--page-padding))`};
-  
+
   // 스크롤바 숨김 추가
   scrollbar-width: none;
   &::-webkit-scrollbar {

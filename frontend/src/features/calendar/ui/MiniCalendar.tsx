@@ -1,9 +1,9 @@
 import styled from 'styled-components';
 import { format, parseISO, eachDayOfInterval } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { getCurrentWeek } from '@/lib/date/getCurrentWeek';
 import type { DailyExpenseStatus } from '@/features/calendar/types/expense';
 import { formatExpenseAmount } from '@/lib/number/formatExpenseAmount';
+import { getWeekRange } from '@/lib/date/getWeekRange';
 import GoodIcon from '@/assets/icons/good-icon.svg?react';
 import NormalIcon from '@/assets/icons/normal-icon.svg?react';
 import DangerousIcon from '@/assets/icons/dangerous-icon.svg?react';
@@ -16,17 +16,21 @@ interface Props {
   selectedDate?: string;
 }
 
-export const MiniCalendar = ({ dailyStatusList, onExpand, onDateSelect, selectedDate }: Props) => {
-  const { startDate, endDate } = getCurrentWeek();
+export const MiniCalendar = ({
+  dailyStatusList,
+  onExpand,
+  onDateSelect,
+  selectedDate,
+}: Props) => {
+  const referenceDate = selectedDate ? parseISO(selectedDate) : new Date();
+  const { startDate, endDate } = getWeekRange(referenceDate);
   const weekDates = eachDayOfInterval({
     start: parseISO(startDate),
     end: parseISO(endDate),
   });
 
   const today = new Date();
-  const statusMap = Object.fromEntries(
-    dailyStatusList.map((d) => [d.date, d])
-  );
+  const statusMap = Object.fromEntries(dailyStatusList.map((d) => [d.date, d]));
 
   return (
     <Wrapper>
@@ -43,10 +47,14 @@ export const MiniCalendar = ({ dailyStatusList, onExpand, onDateSelect, selected
             : '-';
 
           return (
-            <Day key={dateStr} onClick={() => onDateSelect?.(dateStr)}>
+            <Day
+              key={dateStr}
+              onClick={() => !isFuture && onDateSelect?.(dateStr)}
+              $isFuture={isFuture}
+            >
               <Label>{format(date, 'E', { locale: ko })}</Label>
               <DateText>{format(date, 'd')}</DateText>
-              <Face $isSelected={isSelected} onClick={() => onDateSelect?.(dateStr)}>
+              <Face $isSelected={isSelected} $isFuture={isFuture}>
                 <Icon />
               </Face>
               <Amount>{amountText}</Amount>
@@ -54,8 +62,8 @@ export const MiniCalendar = ({ dailyStatusList, onExpand, onDateSelect, selected
           );
         })}
       </Content>
-      <HandleWrapper>
-        <Handle onClick={onExpand} />
+      <HandleWrapper onClick={onExpand}>
+        <Handle />
       </HandleWrapper>
     </Wrapper>
   );
@@ -63,10 +71,14 @@ export const MiniCalendar = ({ dailyStatusList, onExpand, onDateSelect, selected
 
 function getIconByStatus(status?: 'GOOD' | 'NOT_BAD' | 'BAD') {
   switch (status) {
-    case 'GOOD': return GoodIcon;
-    case 'NOT_BAD': return NormalIcon;
-    case 'BAD': return DangerousIcon;
-    default: return BasicIcon;
+    case 'GOOD':
+      return GoodIcon;
+    case 'NOT_BAD':
+      return NormalIcon;
+    case 'BAD':
+      return DangerousIcon;
+    default:
+      return BasicIcon;
   }
 }
 
@@ -104,9 +116,10 @@ const Handle = styled.div`
   cursor: pointer;
 `;
 
-const Day = styled.div`
+const Day = styled.div<{ $isFuture: boolean }>`
   text-align: center;
   flex: 1;
+  cursor: ${({ $isFuture }) => ($isFuture ? 'not-allowed' : 'pointer')};
 `;
 
 const Label = styled.div`
@@ -122,8 +135,8 @@ const DateText = styled.div`
 `;
 
 const Face = styled.div.withConfig({
-  shouldForwardProp: (prop) => prop !== '$isSelected',
-})<{ $isSelected: boolean }>`
+  shouldForwardProp: (prop) => !['$isSelected', '$isFuture'].includes(prop),
+})<{ $isSelected: boolean; $isFuture: boolean }>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -131,7 +144,7 @@ const Face = styled.div.withConfig({
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  cursor: pointer;
+  cursor: ${({ $isFuture }) => ($isFuture ? 'not-allowed' : 'pointer')};
 
   ${({ $isSelected }) =>
     $isSelected &&

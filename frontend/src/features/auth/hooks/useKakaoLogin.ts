@@ -9,14 +9,12 @@ interface KakaoLoginParams {
 }
 
 export const useKakaoLogin = () => {
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
   const setNickname = useAuthStore((state) => state.setNickname);
   const setProfileImage = useAuthStore((state) => state.setProfileImage);
 
   return useMutation<KakaoLoginResponse, Error, KakaoLoginParams>({
     mutationFn: ({ code, redirectUri }) => requestKakaoLogin(code, redirectUri),
-    onSuccess: ({ accessToken, nickname, imageUrl }) => {
-      setAccessToken(accessToken);
+    onSuccess: ({ nickname, imageUrl }) => {
       setNickname(nickname);
       setProfileImage(imageUrl);
     },

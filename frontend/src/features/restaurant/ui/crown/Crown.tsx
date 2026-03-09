@@ -1,55 +1,26 @@
+import GoldCrown from '@/assets/icons/gold-medal.svg?react';
+import SilverCrown from '@/assets/icons/silver-medal.svg?react';
+import BronzeCrown from '@/assets/icons/bronze-medal.svg?react';
+
 interface CrownBadgeProps {
   rank: number;
 }
 
 export const Crown = ({ rank }: CrownBadgeProps) => {
-  if (rank > 2) return null; // 1~3위까지만 표시
+  if (rank > 2) return null;
 
-  const fillColor = (() => {
+  const CrownIcon = (() => {
     switch (rank) {
       case 0:
-        return '#FFD54B'; // 금
+        return GoldCrown;
       case 1:
-        return '#C0C0C0'; // 은
+        return SilverCrown;
       case 2:
-        return '#FFCC80'; // 동
+        return BronzeCrown;
       default:
-        return '#CCC';
+        return null;
     }
   })();
 
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M7.9929 1.16429C9.23411 0.444285 10.7659 0.444285 12.0071 1.16429L14.325 2.50888L16.6484 3.84395C17.8925 4.55886 18.6584 5.88542 18.6555 7.32035L18.65 10L18.6555 12.6797C18.6584 14.1146 17.8925 15.4411 16.6484 16.1561L14.325 17.4911L12.0071 18.8357C10.7659 19.5557 9.23411 19.5557 7.9929 18.8357L5.675 17.4911L3.35161 16.1561C2.10745 15.4411 1.34156 14.1146 1.3445 12.6797L1.35 10L1.3445 7.32035C1.34156 5.88542 2.10745 4.55886 3.3516 3.84395L5.675 2.50888L7.9929 1.16429Z"
-        fill={fillColor}
-      />
-      <g clipPath="url(#clip0)">
-        <path
-          d="M10 7.5L11.6667 10L13.75 8.33333L12.9167 12.5H7.08333L6.25 8.33333L8.33333 10L10 7.5Z"
-          fill="white"
-          stroke="white"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
-      <defs>
-        <clipPath id="clip0">
-          <rect
-            width="10"
-            height="10"
-            fill="white"
-            transform="translate(5 5)"
-          />
-        </clipPath>
-      </defs>
-    </svg>
-  );
+  return CrownIcon ? <CrownIcon width={20} height={20} /> : null;
 };

@@ -19,7 +19,7 @@ export const GaugeChart = ({ total, spent }: GaugeChartProps) => {
     if (percentLeft > 60) return '잘 절약하고 있어요! 앞으로도 화이팅!';
     if (percentLeft > 30) return '조금 만 더 노력해볼까요? 오늘도 힘내세요!';
     if (percentLeft > 0) return '절약 금액이 얼마 남지 않았어요!\n오늘은 가성비 맛집을 찾아보는 게 어떨까요?';
-    return '이번 주는 달성에 실패했습니다.\n다음 주에는 성공하기를 바래요!';
+    return '이번 주는 달성에 실패했습니다.\n다음 주에는 성공하기를 바라요!';
   };
 
   return (

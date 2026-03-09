@@ -3,21 +3,15 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { ReactNode } from 'react';
 
 interface PrivateRouteProps {
-  children: ReactNode;  // 추가
+  children: ReactNode;
 }
 
 export const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const accessToken = useAuthStore((state) => state.accessToken);
+  const nickname = useAuthStore((state) => state.nickname);
   const isInitializing = useAuthStore((state) => state.isInitializing);
 
-  if (isInitializing) {
-    return null; // 초기화 중에는 아무것도 렌더링하지 않음
-  }
-
-  if (!accessToken) {
-    return <Navigate to="/landing" replace />;
-  }
-
-  return children; 
+  //로컬에서 UI 테스트 할 때 return 부분 주석 처리
+  if (isInitializing) return null;
+  if (!nickname) return <Navigate to="/landing" replace />;
+  return children;
 };
-

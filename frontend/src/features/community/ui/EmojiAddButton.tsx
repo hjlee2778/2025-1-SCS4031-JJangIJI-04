@@ -1,23 +1,37 @@
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EmojiPopover } from '@/features/community/ui/EmojiPopover';
-import { EmojiKey } from '@/features/community/types/community';
 
 interface EmojiAddButtonProps {
-  onSelect: (emojiKey: EmojiKey) => void;
+  onSelect: (emojiKey: number) => void;
 }
 
 export const EmojiAddButton = ({ onSelect }: EmojiAddButtonProps) => {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const handleSelect = (key: EmojiKey) => {
+  const handleSelect = (key: number) => {
     onSelect(key);
     setOpen(false);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
   return (
-    <Container>
-      <Button onClick={() => setOpen(!open)}>
+    <Container ref={ref}>
+      <Button onClick={() => setOpen((prev) => !prev)}>
         <img src="/icons/community/emojis/addEmoji.svg" alt="Add emoji" />
       </Button>
       {open && <EmojiPopover onSelect={handleSelect} />}
@@ -41,7 +55,7 @@ const Button = styled.button`
   cursor: pointer;
 
   img {
-    width: 11px;
-    height: 10px;
+    width: 14px;
+    height: 14px;
   }
 `;

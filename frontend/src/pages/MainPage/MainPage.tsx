@@ -1,77 +1,71 @@
 import styled from 'styled-components';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { ExpandableCalendar } from '@/features/calendar/ui/ExpandableCalendar';
-import type { DailyExpenseStatus } from '@/features/calendar/types/expense';
 import { GaugeChart } from '@/features/spendingStatus/ui/GaugeChart';
 import { FullWidthDivider } from '@/shared/ui/Divider/FullWidthDivider';
 import { ExpenseCard } from '@/features/spendingStatus/ui/ExpenseCard';
 import FileIcon from '@/assets/icons/file.svg?react';
+import { useCheckSavingGoal } from '@/features/goals/hooks/useCheckSavingGoal';
+import {
+  useDailyExpenses,
+  ExpenseRecord,
+} from '@/features/spendingStatus/api/useDailyExpenses';
+import { useRemainingBudgetByDate } from '@/features/goals/api/useRemainingBudgetByDate';
+import { LoadingSpinner } from '@/shared/ui/LoadingSpinner/LoadingSpinner';
 
 const MainPage = () => {
-  const getToday = () => format(new Date(), 'yyyy-MM-dd');
-  const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState(getToday());
-
-  const dummyData: DailyExpenseStatus[] = [
-    { date: '2025-05-05', totalExpense: 8000, status: 'GOOD' },
-    { date: '2025-05-06', totalExpense: 13000, status: 'NOT_BAD' },
-    { date: '2025-05-07', totalExpense: 188000, status: 'BAD' },
-  ];
-
-  const dummyExpenses = [
-    {
-      date: '2025-05-20',
-      records: [
-        {
-          id: 1,
-          storeName: '아비꼬',
-          category: '돈까스 카레',
-          amount: 8900,
-          memo: '돈까스카레 맛있었음',
-          reactions: { 1: 2, 3: 1 },
-        },
-      ],
-    },
-    {
-      date: '2025-05-21',
-      records: [
-        {
-          id: 2,
-          storeName: '이삭토스트',
-          category: '햄치즈토스트',
-          amount: 4500,
-          memo: '맛있당',
-          reactions: { 2: 1 },
-        },
-        {
-          id: 3,
-          storeName: '필동면옥',
-          category: '냉면',
-          amount: 15000,
-          memo: '그냥저냥 평냉',
-          reactions: { 2: 1 },
-        },
-      ],
-    },
-  ];
-
+  useCheckSavingGoal();
+  const userId = useAuthStore((s) => s.userId);
   const nickname = useAuthStore((s) => s.nickname ?? '한끼모아');
-  const selectedExpense = dummyExpenses.find((e) => e.date === selectedDate);
-  const records = selectedExpense?.records ?? [];
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [selectedDate, setSelectedDate] = useState(
+    location.state?.date ?? format(new Date(), 'yyyy-MM-dd')
+  );
+
+  const { data: dailyData } = useDailyExpenses(userId, selectedDate);
+  const { isError: isGoalMissing, isLoading: isGoalLoading } =
+    useRemainingBudgetByDate(selectedDate);
+
+  const records = dailyData?.expenses ?? [];
   const hasRecords = records.length > 0;
-  
+
+  const budget = dailyData?.savingGoalStatus?.budget ?? 0;
+  const remaining = dailyData?.savingGoalStatus?.remainingBudget ?? 0;
+  const spent = budget - remaining;
+
+  if (isGoalLoading) {
+    return <LoadingSpinner message="지출 목표 확인 중..." />;
+  }
+
   return (
     <Container>
-      <ExpandableCalendar dailyStatusList={dummyData} onDateSelect={setSelectedDate} selectedDate={selectedDate} />
-      <GaugeChart total={84000} spent={28000} />
-      <FullWidthDivider />
+      <ExpandableCalendar
+        userId={userId!}
+        onDateSelect={setSelectedDate}
+        selectedDate={selectedDate}
+      />
+
+      {!isGoalMissing ? (
+        <>
+          <GaugeChart total={budget} spent={spent} />
+          <FullWidthDivider />
+        </>
+      ) : (
+        <>
+          <NoGoalBox>선택한 날짜에는 지출 목표 금액이 없어요!</NoGoalBox>
+          <FullWidthDivider />
+        </>
+      )}
 
       <CenteredTextBlock>
         <DateText>{format(parseISO(selectedDate), 'yyyy년 M월 d일')}</DateText>
-        <TitleText>{nickname}님의 외식비 지출 내역 {records.length}건</TitleText>
+        <TitleText>
+          {nickname}님의 외식비 지출 내역 {records.length}건
+        </TitleText>
 
         {!hasRecords && (
           <>
@@ -81,16 +75,31 @@ const MainPage = () => {
               </FileIconWrapper>
               <NoDataText>아직 지출 기록이 없어요</NoDataText>
             </NoDataBlock>
-            <AddButton onClick={() => navigate('/record')}>+ 기록하기</AddButton>
+            <AddButton
+              onClick={() =>
+                navigate('/record', { state: { date: selectedDate } })
+              }
+              disabled={isGoalMissing}
+            >
+              + 기록하기
+            </AddButton>
           </>
         )}
       </CenteredTextBlock>
+
       {hasRecords && (
         <>
-          {records.map((record) => (
+          {records.map((record: ExpenseRecord) => (
             <ExpenseCard key={record.id} {...record} />
           ))}
-          <AddButton onClick={() => navigate('/record')}>+ 기록하기</AddButton>
+          <AddButton
+            onClick={() =>
+              navigate('/record', { state: { date: selectedDate } })
+            }
+            disabled={isGoalMissing}
+          >
+            + 기록하기
+          </AddButton>
         </>
       )}
     </Container>
@@ -151,26 +160,39 @@ const NoDataText = styled.div`
   font-weight: 700;
 `;
 
-const AddButton = styled.button`
+const AddButton = styled.button<{ disabled?: boolean }>`
   display: block;
   margin: 32px auto 24px;
-  padding: 10px 20px; 
-  background-color: #fd6918;
+  padding: 10px 20px;
+  background-color: ${({ disabled }) => (disabled ? '#ccc' : '#fd6918')};
   color: #fff;
   font-weight: 600;
   font-size: 12px;
   border: none;
   border-radius: 999px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 
   &:hover {
-    background-color: #e85c0e;
-    transform: translateY(-1px);
+    background-color: ${({ disabled }) => (disabled ? '#ccc' : '#e85c0e')};
+    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(-1px)')};
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: ${({ disabled }) => (disabled ? 'none' : 'scale(0.98)')};
   }
+`;
+
+const NoGoalBox = styled.div`
+  margin: 16px 0;
+  padding: 12px;
+  background-color: #f8f8f8;
+  border-left: 4px solid #ff6701;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  text-align: center;
 `;

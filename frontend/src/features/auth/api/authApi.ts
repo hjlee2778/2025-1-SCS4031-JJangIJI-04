@@ -6,15 +6,14 @@ export const requestKakaoLogin = async (code: string, redirectUri: string): Prom
     const res = await api.post('/auth/kakao', { 
       code,
       redirectUri 
-  });
+    });
 
-  const { accessToken, nickname, image_url } = res.data;
+    const { nickname, image_url } = res.data;
 
-  return {
-    accessToken,
-    nickname,
-    imageUrl: image_url, // snake_case → camelCase로 변환
-  };
+    return {
+      nickname,
+      imageUrl: image_url, // snake_case → camelCase로 변환
+    };
   } catch (error) {
     console.error('카카오 로그인 실패', error);
     throw error;

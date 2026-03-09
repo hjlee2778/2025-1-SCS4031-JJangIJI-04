@@ -35,14 +35,14 @@ export const CategorySelector = ({ selected, onChange }: Props) => {
     <Grid>
       {CATEGORY_LIST.map((cat) => (
         <Button
-            key={cat.value}
-            selected={selected.includes(cat.value)}
-            onClick={() => toggle(cat.value)}
+          key={cat.value}
+          selected={selected.includes(cat.value)}
+          onClick={() => toggle(cat.value)}
         >
-        <div className="image-container">
+          <div className="image-container">
             <img src={`/icons/categories/${cat.icon}`} alt={cat.label} />
-        </div>
-        {cat.label}
+          </div>
+          {cat.label}
         </Button>
       ))}
     </Grid>
@@ -51,7 +51,7 @@ export const CategorySelector = ({ selected, onChange }: Props) => {
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr); // 2열 정렬
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   margin-top: 32px;
 `;
@@ -63,9 +63,9 @@ const Button = styled.button<{ selected: boolean }>`
   justify-content: center;
 
   padding: 12px;
-  height: 75px;  
-  width: 100%;           
-  aspect-ratio: 3 / 2;   
+  height: 75px;
+  width: 100%;
+  aspect-ratio: 3 / 2;
 
   background-color: ${({ selected }) => (selected ? '#FF6701' : '#fff')};
   border: 1px solid ${({ selected }) => (selected ? '#FF6701' : '#ccc')};
@@ -89,13 +89,11 @@ const Button = styled.button<{ selected: boolean }>`
   }
 
   img {
-    width: 35px;    
-    height: 35px;    
+    width: 35px;
+    height: 35px;
     object-fit: contain;
     filter: ${({ selected }) =>
-      selected
-        ? 'invert(1)'
-        : 'brightness(0) saturate(100%) invert(40%)'};
+      selected ? 'invert(1)' : 'brightness(0) saturate(100%) invert(40%)'};
   }
 
   font-size: 11px;

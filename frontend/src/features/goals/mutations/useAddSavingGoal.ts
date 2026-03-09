@@ -1,13 +1,20 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { requestAddSavingGoal, SavingGoalRequest } from '@/features/goals/api/requestAddSavingGoal';
 import { useNavigate } from 'react-router-dom';
 
 export const useAddSavingGoal = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: SavingGoalRequest) => requestAddSavingGoal(data),
+    mutationFn: async (data: SavingGoalRequest) => {
+      const result = await requestAddSavingGoal(data);
+      return result;
+    },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['remainingBudget'] });
+      queryClient.invalidateQueries({ queryKey: ['dailyExpenses'] });
+      queryClient.invalidateQueries({ queryKey: ['weeklyExpenseStatus'] });
       navigate('/main');
     },
     onError: (error: any) => {

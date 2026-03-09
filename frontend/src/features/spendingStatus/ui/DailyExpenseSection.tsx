@@ -1,14 +1,6 @@
 import styled from 'styled-components';
 import { ExpenseCard } from '@/features/spendingStatus/ui/ExpenseCard';
-import type { EmojiKey } from '@/features/community/types/community';
-
-interface ExpenseRecord {
-  storeName: string;
-  category: string;
-  amount: number;
-  memo: string;
-  reactions: Partial<Record<EmojiKey, number>>;
-}
+import { ExpenseRecord } from '@/features/spendingStatus/api/useDailyExpenses';
 
 interface DailyExpenseSectionProps {
   date: string; // e.g. "2025-05-19"

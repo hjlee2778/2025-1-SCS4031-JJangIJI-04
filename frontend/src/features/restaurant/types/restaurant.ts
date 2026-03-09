@@ -6,11 +6,11 @@ export interface MenuItem {
 }
 
 export interface Restaurant {
-  id: string;
+  id: number;
   name: string;
   imageUrls: string[];
   averagePrice: number;
-  location: string;
+  address: string;
   categories: string[];
   menu: MenuItem[];
   bookmarked: boolean;

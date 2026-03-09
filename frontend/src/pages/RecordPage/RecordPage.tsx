@@ -2,24 +2,31 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { InputField } from '@/shared/ui/InputField';
 import { FullWidthDivider } from '@/shared/ui/Divider/FullWidthDivider';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import NavigateBeforeIcon from '@/assets/icons/navigate-before.svg?react';
 import { StarRating } from '@/features/record/ui/StarRating';
-import { useGetRemainingBudget } from '@/features/record/api/useGetRemainingBudget';
+import { useRemainingBudget } from '@/features/goals/api/useRemainingBudget';
 import { useAddExpense } from '@/features/record/mutations/useAddExpense';
 import { format } from 'date-fns';
 import DatabaseIcon from '@/assets/icons/database.svg?react';
 import ArrowIcon from '@/assets/icons/circle-point.svg?react';
+import { RestaurantSearchInput } from '@/features/record/ui/RestaurantSearchInput';
+import { Restaurant } from '@/features/restaurant/types/restaurant';
 
 const RecordPage = () => {
   const [menuName, setMenuName] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<Restaurant | null>(null);
   const [amount, setAmount] = useState('');
   const [rating, setRating] = useState(0);
   const [memo, setMemo] = useState('');
   const navigate = useNavigate();
-  const { data: remainingBudget = 0 } = useGetRemainingBudget();
   const { mutate: addExpense } = useAddExpense();
+  const location = useLocation();
+  const selectedDateFromCalendar =
+    (location.state?.date as string) ?? format(new Date(), 'yyyy-MM-dd');
+  const { data: budgetData } = useRemainingBudget(selectedDateFromCalendar);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/,/g, '');
@@ -31,7 +38,8 @@ const RecordPage = () => {
   };
 
   const numericAmount = Number(amount.replace(/,/g, '') || 0);
-  const remainingAfterExpense = remainingBudget - numericAmount;
+  const remainingAfterExpense =
+    (budgetData?.remainingBudget ?? 0) - numericAmount;
 
   const isFormValid =
     restaurantName.trim() !== '' &&
@@ -41,20 +49,28 @@ const RecordPage = () => {
     numericAmount > 0 &&
     rating > 0;
 
+  const handleRestaurantChange = (name: string, restaurant?: Restaurant) => {
+    setRestaurantName(name);
+    setSelectedRestaurant(restaurant || null);
+  };
+
   const handleSubmit = () => {
     const payload = {
+      restaurantId: selectedRestaurant?.id
+        ? Number(selectedRestaurant.id)
+        : undefined,
       restaurantName,
       menuName,
       expense: numericAmount,
       memo,
-      expenseDate: format(new Date(), 'yyyy-MM-dd'),
+      expenseDate: selectedDateFromCalendar,
       rating,
     };
 
     addExpense(payload, {
       onSuccess: () => {
         alert('지출내역이 성공적으로 저장되었어요!');
-        navigate('/main');
+        navigate('/main', { state: { date: selectedDateFromCalendar } });
       },
       onError: () => {
         alert('저장 중 오류가 발생했습니다.');
@@ -71,17 +87,19 @@ const RecordPage = () => {
       </BackButtonWrapper>
 
       <LabeledInputWrapper>
-        <Label>어떤 식당을 방문하셨나요? <Asterisk>*</Asterisk></Label>
-        <InputField
-          placeholder="식당명을 입력해주세요"
+        <Label>
+          어떤 식당을 방문하셨나요? <Asterisk>*</Asterisk>
+        </Label>
+        <RestaurantSearchInput
           value={restaurantName}
-          onChange={(e) => setRestaurantName(e.target.value)}
-          maxLength={30}
+          onChange={handleRestaurantChange}
         />
       </LabeledInputWrapper>
 
       <LabeledInputWrapper>
-        <Label>어떤 메뉴를 드셨나요? <Asterisk>*</Asterisk></Label>
+        <Label>
+          어떤 메뉴를 드셨나요? <Asterisk>*</Asterisk>
+        </Label>
         <InputField
           placeholder="메뉴명을 입력해주세요"
           value={menuName}
@@ -91,14 +109,18 @@ const RecordPage = () => {
       </LabeledInputWrapper>
 
       <LabeledInputWrapper>
-        <Label>식당의 만족도를 평가해주세요 <Asterisk>*</Asterisk></Label>
+        <Label>
+          식당의 만족도를 평가해주세요 <Asterisk>*</Asterisk>
+        </Label>
         <StarRating value={rating} onChange={setRating} />
       </LabeledInputWrapper>
 
       <FullWidthDivider />
 
       <LabeledInputWrapper>
-        <Label>외식비 총액을 입력해주세요 <Asterisk>*</Asterisk></Label>
+        <Label>
+          외식비 총액을 입력해주세요 <Asterisk>*</Asterisk>
+        </Label>
         <InputField
           placeholder="금액을 입력해주세요"
           value={amount}
@@ -116,7 +138,9 @@ const RecordPage = () => {
           <BudgetSummary>
             <BudgetBox>
               <BudgetLabel>현재 가용 금액</BudgetLabel>
-              <BudgetValue>{remainingBudget.toLocaleString()}원</BudgetValue>
+              <BudgetValue>
+                {(budgetData?.remainingBudget ?? 0).toLocaleString()}원
+              </BudgetValue>
             </BudgetBox>
             <StyledArrow />
             <BudgetBox>
@@ -202,7 +226,7 @@ const BudgetResultSection = styled.div`
 `;
 
 const NoticeBox = styled.div`
-  background-color: #FF6701;
+  background-color: #ff6701;
   color: #fff;
   font-weight: 700;
   padding: 12px;
@@ -239,7 +263,7 @@ const BudgetBox = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border: 1px solid #E0E0E0;
+  border: 1px solid #e0e0e0;
 `;
 
 const BudgetLabel = styled.div`

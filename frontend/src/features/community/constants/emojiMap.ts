@@ -1,6 +1,4 @@
-import { EmojiKey } from '@/features/community/types/community';
-
-export const emojiMap: Record<EmojiKey, { src: string; label: string }> = {
+export const emojiMap: Record<number, { src: string; label: string }> = {
   1: { src: '/icons/community/emojis/smile.svg', label: '스마일' },
   2: { src: '/icons/community/emojis/loveEyes.svg', label: '눈하트' },
   3: { src: '/icons/community/emojis/tongue.svg', label: '메롱' },
@@ -9,27 +7,15 @@ export const emojiMap: Record<EmojiKey, { src: string; label: string }> = {
   6: { src: '/icons/community/emojis/partyFace.svg', label: '축하' },
   7: { src: '/icons/community/emojis/thumbsUp.svg', label: '좋아요' },
   8: { src: '/icons/community/emojis/pray.svg', label: '감사해요' },
-  9: {
-    src: '/icons/community/emojis/fingerHeart.svg',
-    label: '손하트',
-  },
+  9: { src: '/icons/community/emojis/fingerHeart.svg', label: '손하트' },
   10: { src: '/icons/community/emojis/victory.svg', label: '브이' },
-  11: {
-    src: '/icons/community/emojis/heartHands.svg',
-    label: '하트손',
-  },
+  11: { src: '/icons/community/emojis/heartHands.svg', label: '하트손' },
   12: { src: '/icons/community/emojis/hundred.svg', label: '100점' },
-  13: {
-    src: '/icons/community/emojis/question.svg',
-    label: '놀람+궁금',
-  },
+  13: { src: '/icons/community/emojis/question.svg', label: '놀람+궁금' },
   14: { src: '/icons/community/emojis/loveRibbon.svg', label: '선물' },
   15: { src: '/icons/community/emojis/medal.svg', label: '메달' },
   16: { src: '/icons/community/emojis/rose.svg', label: '장미' },
-  17: {
-    src: '/icons/community/emojis/partyPopper.svg',
-    label: '폭죽',
-  },
+  17: { src: '/icons/community/emojis/partyPopper.svg', label: '폭죽' },
   18: { src: '/icons/community/emojis/rice.svg', label: '밥' },
   19: { src: '/icons/community/emojis/sandwitch.svg', label: '김밥' },
   20: { src: '/icons/community/emojis/salad.svg', label: '샐러드' },
