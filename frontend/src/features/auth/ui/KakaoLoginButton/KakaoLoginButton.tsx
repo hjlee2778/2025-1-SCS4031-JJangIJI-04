@@ -8,6 +8,13 @@ export const KakaoLoginButton = () => {
   const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${window.location.hostname.startsWith('www.') ? REDIRECT_URI_WWW : REDIRECT_URI}&response_type=code`;
 
   const handleLogin = () => {
+
+    //로컬에서는 모킹된 콜백으로 이동
+    if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_MSW === 'true') {
+      window.location.href = '/oauth/callback/kakao?code=mock-kakao-code';
+      return;
+    }
+    // 프로덕션에서는 실제 카카오 로그인 페이지로 이동
     window.location.href = KAKAO_AUTH_URL;
   };
 
