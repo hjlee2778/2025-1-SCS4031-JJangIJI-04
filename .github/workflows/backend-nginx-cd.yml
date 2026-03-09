@@ -1,0 +1,62 @@
+name: backend-nginx-cd
+
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - 'backend/deploy/nginx/**'
+    branches: [ "dev-be" ]
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend/deploy/nginx
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: default.conf push
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_IP }}
+          username: ubuntu
+          key: ${{ secrets.AWS_KEY }}
+          source: "backend/deploy/nginx/default.conf"
+          target: "/home/ubuntu/nginx"
+          strip_components: 4
+
+      - name: docker-compose push
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_IP }}
+          username: ubuntu
+          key: ${{ secrets.AWS_KEY }}
+          source: "backend/deploy/nginx/docker-compose.yml"
+          target: "/home/ubuntu/nginx"
+          strip_components: 4
+          
+      - name: dockerfile push
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_IP }}
+          username: ubuntu
+          key: ${{ secrets.AWS_KEY }}
+          source: "backend/deploy/nginx/Dockerfile"
+          target: "/home/ubuntu/nginx"
+          strip_components: 4
+          
+      - name: EC2 배포
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_IP }}
+          username: ubuntu
+          key: ${{ secrets.AWS_KEY }}
+          script: |
+            cd /home/ubuntu/nginx
+            docker ps -aq -f name=nginx | xargs -r docker rm -f
+            docker-compose up -d

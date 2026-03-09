@@ -1,0 +1,70 @@
+name: backend-cd
+
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - 'backend/**'
+    branches: [ "dev" , "main" ]
+  push:
+    branches: ["feat/#6-backend-cicd"]
+
+jobs:
+  build:
+    #if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul
+    defaults:
+      run:
+        working-directory: ./backend/hankkimoa
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JDK 17 세팅
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle 세팅
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Gradle Wrapper 실행 권한 추가
+        run: chmod +x gradlew
+
+      - name: Write application.yml
+        env:
+          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
+          APPLICATION_TEST_YML: ${{ secrets.APPLICATION_TEST_YML }}
+      
+        run: |
+          mkdir -p src/test/resources
+          echo "${APPLICATION_YML}" > src/main/resources/application.yml
+          echo "${APPLICATION_TEST_YML}" > src/test/resources/application-test.yml
+
+      - name: Build with Gradle
+        run: ./gradlew clean build
+
+      - name: 도커 빌드 및 푸쉬
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -t ${{ secrets.DOCKER_REPO }}/hankkimoa_back .
+          docker push ${{ secrets.DOCKER_REPO }}/hankkimoa_back
+
+      - name: EC2 배포
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_IP }}
+          username: ubuntu
+          key: ${{ secrets.AWS_KEY }}
+          script: |
+            docker logout
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker ps -a --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/hankkimoa_back" -q | xargs -r docker rm -f
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/hankkimoa_back || true
+            docker pull ${{ secrets.DOCKER_USERNAME }}/hankkimoa_back
+            docker run -d --name hankkimoa_back -p 8080:8080 -e TZ=Asia/Seoul ${{ secrets.DOCKER_USERNAME }}/hankkimoa_back
