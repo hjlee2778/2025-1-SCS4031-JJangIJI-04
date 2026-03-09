@@ -57,7 +57,7 @@ export const handlers = [
       id: 1,
       email: 'test@kakao.com',
       nickname: '테스트 계정',
-      imageUrl: 'https://example.com/image.png',
+      imageUrl: '/icons/community/user-avatar.svg',
       loginType: 'kakao',
       role: 'user',
       isExpenseOpen: 'true',
@@ -193,5 +193,68 @@ export const handlers = [
       });
     
     return HttpResponse.json({ dailyExpenseStatus: dailyStatus });
+  }),
+
+  // 커뮤니티 피드 (페이지네이션)
+  http.get('/community/expenses', ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page')) || 0;
+    const size = Number(url.searchParams.get('size')) || 10;
+    
+    // 모든 지출 데이터를 날짜 역순으로 정렬하여 피드 생성
+    const allExpenses = Object.entries(expensesDB)
+      .flatMap(([date, expenses]) => 
+        expenses.map(exp => {
+          const totalExpense = expenses.reduce((sum, e) => sum + e.expense, 0);
+          return {
+            expenseId: exp.id,
+            userId: 1,
+            nickname: '테스트 계정',
+            imageUrl: '/icons/community/user-avatar.svg',
+            restaurantId: exp.id,
+            restaurant: exp.restaurant,
+            menu: exp.menu,
+            expense: exp.expense,
+            createdAt: `${date}T12:00:00`, // ISO 형식으로 날짜 추가
+            memo: exp.memo || '맛있게 먹었어요!',
+            savingGoalId: 1,
+            savingGoal: weeklyBudget,
+            remainingBudget: weeklyBudget - totalExpense,
+            emojis: exp.emojis || [],
+          };
+        })
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // 최신순
+    
+    // 페이지네이션
+    const start = page * size;
+    const end = start + size;
+    const paginatedData = allExpenses.slice(start, end);
+    
+    return HttpResponse.json(paginatedData);
+  }),
+
+  // 커뮤니티 이모지 토글
+  http.post('/community/expenses/:expenseId/emojis/:emojiId', ({ params }) => {
+    const { expenseId, emojiId } = params;
+    
+    // 지출 찾기 및 이모지 토글
+    for (const date in expensesDB) {
+      const expense = expensesDB[date].find(e => e.id === Number(expenseId));
+      if (expense) {
+        if (!expense.emojis) expense.emojis = [];
+        
+        const existingEmoji = expense.emojis.find((e: any) => e.emojiId === Number(emojiId));
+        if (existingEmoji) {
+          existingEmoji.count = (existingEmoji.count || 0) + 1;
+        } else {
+          expense.emojis.push({ emojiId: Number(emojiId), count: 1 });
+        }
+        
+        return HttpResponse.json({ message: 'Success' });
+      }
+    }
+    
+    return HttpResponse.json({ message: 'Not found' }, { status: 404 });
   }),
 ];
