@@ -560,4 +560,88 @@ export const handlers = [
     
     return HttpResponse.json(detail);
   }),
+
+  // 북마크한 식당 목록
+  http.get('/bookmarks/restaurants', () => {
+    return HttpResponse.json([
+      {
+        id: 1,
+        name: '맛있는 한식당',
+        menuAverage: 8500,
+        imgUrl: '/images/basic-restaurant.svg',
+        streetAddress: '서울 강남구 테헤란로 123',
+        openingHours: '11:00-22:00',
+        category: '한식',
+        bookmarked: true,
+      },
+      {
+        id: 3,
+        name: '일식 맛집',
+        menuAverage: 12000,
+        imgUrl: '/images/basic-restaurant.svg',
+        streetAddress: '서울 강남구 역삼동 789',
+        openingHours: '11:30-22:00',
+        category: '일식',
+        bookmarked: true,
+      }
+    ]);
+  }),
+
+  // 좋아요 누른 피드
+  http.get('/community/expenses/emojis', () => {
+    return HttpResponse.json([
+      {
+        expenseId: 1,
+        userId: 1,
+        nickname: '테스트 계정',
+        imageUrl: '/icons/community/user-avatar.svg',
+        restaurantId: 1,
+        restaurant: '맛있는 한식당',
+        menu: '김치찌개',
+        expense: 8000,
+        createdAt: '2026-03-08T12:00:00',
+        memo: '점심 식사',
+        savingGoalId: 1,
+        savingGoal: weeklyBudget,
+        remainingBudget: 42000,
+        emojis: [{ emojiId: 1, count: 3 }],
+      }
+    ]);
+  }),
+
+  // 닉네임 변경
+  http.patch('/nickname', async ({ request }) => {
+    const body = await request.json() as { nickname: string };
+    return HttpResponse.json({ 
+      message: 'Nickname updated',
+      nickname: body.nickname 
+    });
+  }),
+
+  // 카테고리 변경
+  http.put('/categories', async ({ request }) => {
+    const body = await request.json() as { categories: number[] };
+    return HttpResponse.json({ 
+      message: 'Categories updated',
+      categories: body.categories 
+    });
+  }),
+
+  // 월간 지출 총액 (마이페이지용)
+  http.get('/users/:userId/expenses/total', ({ request }) => {
+    const url = new URL(request.url);
+    const from = url.searchParams.get('from') || '';
+    const to = url.searchParams.get('to') || '';
+    
+    // 해당 기간의 총 지출 계산
+    let total = 0;
+    Object.keys(expensesDB)
+      .filter(date => date >= from && date <= to)
+      .forEach(date => {
+        const expenses = expensesDB[date];
+        total += expenses.reduce((sum, e) => sum + e.expense, 0);
+      });
+    
+    return HttpResponse.json({ total });
+  }),
 ];
