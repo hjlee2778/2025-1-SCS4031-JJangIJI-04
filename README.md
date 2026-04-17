@@ -3,7 +3,7 @@
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/b57de9c9-b90a-4eb6-a58a-d831e870a655" />
 
 ## 프로젝트 소개
-[🔗 한끼모아 바로가기](https://hankkimoa.click)
+[🔗 한끼모아 바로가기](https://hankkimoa.vercel.app)
 
 ### 개발기간 : 2025/03/20 ~ 2024/06/05
 
